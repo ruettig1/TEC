@@ -19,9 +19,11 @@
 
 // Example creating a thermocouple instance with software SPI on any three
 // digital IO pins.
-#define MAXDO   3
-#define MAXCS   4
-#define MAXCLK  5
+#define MAXDO   2
+#define MAXCS   3
+#define MAXCLK  4
+#define POWREL  7
+
 
 // initialize the Thermocouple
 Adafruit_MAX31855 thermocouple(MAXCLK, MAXCS, MAXDO);
@@ -33,10 +35,15 @@ Adafruit_MAX31855 thermocouple(MAXCLK, MAXCS, MAXDO);
 
 int target_temp = 0;
 
-void setup() {
-  Serial.begin(9600);
+typedef enum {On, Off} state;
 
-  int target_temp = 0;
+static state power_relay_state = Off;
+
+void setup() {
+  
+  pinMode(POWREL, OUTPUT);
+  
+  Serial.begin(9600);
  
   while (!Serial) delay(1); // wait for Serial on Leonardo/Zero, etc
   
@@ -70,7 +77,20 @@ void loop() {
    }
    Serial.print("F = ");
    Serial.println(thermocouple.readFarenheit());
+
+   if(int(thermocouple.readFarenheit()) > target_temp)
+   {
+      digitalWrite(POWREL, HIGH);
+      Serial.println("Turning power relay on!");
+   }
+   else
+   {
+      digitalWrite(POWREL, LOW);
+      Serial.println("Turning power relay off!");
+   }
  
    delay(1000);
 }
+
+
 
