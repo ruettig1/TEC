@@ -47,34 +47,44 @@ void setup() {
  
   while (!Serial) delay(1); // wait for Serial on Leonardo/Zero, etc
   
-  Serial.println("MAX31855 test");
+  Serial.println("MAX31855 test; Send any input during operation to reset target temperature.");
   // wait for MAX chip to stabilize
 
-  Serial.println("Enter your desired temperature");
+  Serial.println("Enter your desired temperature (degrees F):");
 
   while(!Serial.available()) //wait for user input to read from serial
   {
   }
 
   target_temp = Serial.parseInt();
-  Serial.print("Target temp: ");
-  Serial.println(target_temp);
 
   delay(500);
 }
 
+void pollPause() {
+  if (Serial.read() != -1) {
+    digitalWrite(POWREL, LOW);
+    Serial.println();
+    Serial.println("Enter your new desired temperature:");
+
+    while(!Serial.available()) //wait for user input to read from serial
+    {
+    }
+
+    target_temp = Serial.parseInt();
+  }
+}
+
 void loop() {
-  // basic readout test, just print the current temp
-   Serial.print("Internal Temp = ");
-   Serial.println(thermocouple.readInternal());
+   pollPause();
+  
+   Serial.print("Target Temp = ");
+   Serial.println(target_temp);
 
    double c = thermocouple.readCelsius();
    if (isnan(c)) {
      Serial.println("Something wrong with thermocouple!");
-   } else {
-     Serial.print("C = "); 
-     Serial.println(c);
-   }
+   } 
    Serial.print("F = ");
    Serial.println(thermocouple.readFarenheit());
 
